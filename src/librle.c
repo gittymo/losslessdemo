@@ -40,6 +40,6 @@ char * RLE_Compress(const char * DATA, const size_t DATA_LENGTH, size_t * compre
             r = re;
         }
     }
-
+    *compressed_data_length_ptr = w;
     return compressed_data_buffer;
 }
