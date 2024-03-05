@@ -5,13 +5,10 @@
 unsigned char * RLE_Compress(const unsigned char * DATA, const size_t DATA_LENGTH, size_t * compressed_data_length_ptr)
 {
     if (!DATA || DATA_LENGTH == 0 || !compressed_data_length_ptr) return NULL;
-
     *compressed_data_length_ptr = 0;
     unsigned char * compressed_data_buffer = (char *) malloc(DATA_LENGTH);
     if (!compressed_data_buffer) return NULL;
-
     size_t compressed_data_buffer_size = DATA_LENGTH;
-
     size_t w = 0, r = 0;
     while (r < DATA_LENGTH) {
         size_t re = r;
