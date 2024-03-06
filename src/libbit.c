@@ -14,9 +14,28 @@ BitBuffer * BitBuffer_Create()
         return NULL;
     }
     bit_buffer->_buffer_size = LIBBIT_DEFAULT_BUFFER_SIZE_BYTES;
-    bit_buffer->byte_pos = bit_buffer->alt_byte_pos = 0;
-    bit_buffer->bit_pos = bit_buffer->alt_bit_pos = 0;
+    bit_buffer->byte_pos = 0;
+    bit_buffer->bit_pos = 0;
     bit_buffer->is_read_buffer = false;
+    return bit_buffer;
+}
+
+BitBuffer * BitBuffer_CreateUsingData(const u_char * DATA, const size_t DATA_LENGTH)
+{
+    if (!DATA || DATA_LENGTH == 0) return NULL;
+    BitBuffer * bit_buffer = (BitBuffer *) malloc(sizeof(BitBuffer));
+    if (!bit_buffer) return NULL;
+    bit_buffer->buffer = (u_char *) malloc(DATA_LENGTH + LIBBIT_DEFAULT_BUFFER_SIZE_BYTES);
+    if (!bit_buffer->buffer) {
+        free(bit_buffer);
+        return NULL;
+    } else {
+        memcpy(bit_buffer->buffer, DATA, DATA_LENGTH);
+    }
+    bit_buffer->is_read_buffer = true;
+    bit_buffer->_buffer_size = DATA_LENGTH + LIBBIT_DEFAULT_BUFFER_SIZE_BYTES;
+    bit_buffer->byte_pos = 0;
+    bit_buffer->bit_pos = 0;
     return bit_buffer;
 }
 
@@ -27,8 +46,7 @@ size_t _BitBuffer_getByteLengthForBitCount(const u_char BIT_COUNT)
 
 bool BitBuffer_WriteBits(const size_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char VALUE_BIT_LENGTH = BITS_TO_WRITE == 0 || BITS_TO_WRITE > 64 ? 8 : BITS_TO_WRITE;
     const size_t VALUE_BYTE_LENGTH = _BitBuffer_getByteLengthForBitCount(VALUE_BIT_LENGTH);
@@ -50,8 +68,7 @@ bool BitBuffer_WriteBits(const size_t VALUE, const u_char BITS_TO_WRITE, BitBuff
 
 bool BitBuffer_WriteByte(const u_char VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char VALUE_BIT_LENGTH = BITS_TO_WRITE == 0 || BITS_TO_WRITE > 8 ? 8 : BITS_TO_WRITE;
     const u_char LOW_VALUE_BYTE_FREE_BITS = 8 - bit_buffer->bit_pos;
@@ -87,8 +104,7 @@ bool BitBuffer_WriteByte(const u_char VALUE, const u_char BITS_TO_WRITE, BitBuff
 
 bool BitBuffer_WriteShort(const u_int16_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char VALUE_BIT_LENGTH = BITS_TO_WRITE == 0 || BITS_TO_WRITE > 16 ? 16 : BITS_TO_WRITE;
     return BitBuffer_WriteBits(VALUE, VALUE_BIT_LENGTH, bit_buffer);
@@ -96,8 +112,7 @@ bool BitBuffer_WriteShort(const u_int16_t VALUE, const u_char BITS_TO_WRITE, Bit
 
 bool BitBuffer_WriteInt(const u_int32_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char VALUE_BIT_LENGTH = BITS_TO_WRITE == 0 || BITS_TO_WRITE > 32 ? 32 : BITS_TO_WRITE;
     return BitBuffer_WriteBits(VALUE, VALUE_BIT_LENGTH, bit_buffer);
@@ -105,8 +120,7 @@ bool BitBuffer_WriteInt(const u_int32_t VALUE, const u_char BITS_TO_WRITE, BitBu
 
 bool BitBuffer_WriteLong(const u_int64_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char VALUE_BIT_LENGTH = BITS_TO_WRITE == 0 || BITS_TO_WRITE > 64 ? 64 : BITS_TO_WRITE;
     return BitBuffer_WriteBits(VALUE, VALUE_BIT_LENGTH, bit_buffer);
@@ -114,8 +128,7 @@ bool BitBuffer_WriteLong(const u_int64_t VALUE, const u_char BITS_TO_WRITE, BitB
 
 bool BitBuffer_WriteBytes(const u_char * DATA, const size_t DATA_LENGTH_BYTES, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer || !DATA || DATA_LENGTH_BYTES == 0) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
 
     const u_char FIRST_ORIGINAL_BYTE_VALUE = bit_buffer->buffer[bit_buffer->byte_pos];
     const u_char FIRST_ORIGINAL_BYTE_BIT_POS = bit_buffer->bit_pos;
@@ -130,19 +143,18 @@ bool BitBuffer_WriteBytes(const u_char * DATA, const size_t DATA_LENGTH_BYTES, B
 
 bool BitBuffer_WriteString(const char * STRING, const size_t STRING_LENGTH, BitBuffer * bit_buffer)
 {
-    if (!bit_buffer || !STRING || STRING_LENGTH == 0) return false;
-    if (bit_buffer->is_read_buffer) _BitBuffer_SwapMode(bit_buffer);
-    
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
+
     BitBuffer_WriteBytes((u_char *) STRING, STRING_LENGTH + 1, bit_buffer);
 }
 
 void BitBuffer_Free(BitBuffer * bit_buffer)
 {   
-    if (!bit_buffer) return;
-    if (bit_buffer->buffer) free(bit_buffer->buffer);
+    if (!bit_buffer || bit_buffer->is_read_buffer) return false;
+
     bit_buffer->buffer = NULL;
-    bit_buffer->bit_pos = bit_buffer->alt_bit_pos = 0;
-    bit_buffer->byte_pos = bit_buffer->alt_byte_pos = 0;
+    bit_buffer->bit_pos = 0;
+    bit_buffer->byte_pos = 0;
     bit_buffer->_buffer_size = 0;
     free(bit_buffer);
 }
@@ -154,18 +166,6 @@ void _BitBuffer_RevertData(const size_t BYTES_TO_REVERT, const u_char FIRST_ORIG
     while (b < BYTES_TO_REVERT) bit_buffer->buffer[bit_buffer->byte_pos--] = 0;
     bit_buffer->buffer[bit_buffer->byte_pos] = FIRST_ORIGINAL_BYTE_VALUE;
     bit_buffer->bit_pos = FIRST_ORIGINAL_BYTE_BIT_POS;
-}
-
-void _BitBuffer_SwapMode(BitBuffer * bit_buffer)
-{
-    if (!bit_buffer) return;
-    size_t temp_byte_pos = bit_buffer->byte_pos;
-    u_char temp_bit_pos = bit_buffer->bit_pos;
-    bit_buffer->byte_pos = bit_buffer->alt_byte_pos;
-    bit_buffer->bit_pos = bit_buffer->alt_bit_pos;
-    bit_buffer->alt_byte_pos = temp_byte_pos;
-    bit_buffer->alt_bit_pos = temp_bit_pos;
-    bit_buffer->is_read_buffer = !bit_buffer->is_read_buffer;
 }
 
 int main(int argc, char * argv[])
