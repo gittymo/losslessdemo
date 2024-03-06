@@ -36,7 +36,16 @@ libcodetable: $(OBJDIR)/libcodetable.o
 
 $(OBJDIR)/libcodetable.o: dirs $(SRCDIR)/libcodetable.c $(INCDIR)/libcodetable.h
 	$(GCC) -c -o $(OBJDIR)/libcodetable.o $(SRCDIR)/libcodetable.c -I./$(INCDIR)
-	
+
+testbit: libbit $(SRCDIR)/bitdemo.c
+	$(GCC) -o $(BINDIR)/bitdemo $(SRCDIR)/bitdemo.c -I./$(INCDIR) -L./$(LIBDIR) -lbit
+
+libbit: $(OBJDIR)/libbit.o
+	$(ARC) $(LIBDIR)/libbit.a $(OBJDIR)/libbit.o
+
+$(OBJDIR)/libbit.o: dirs $(SRCDIR)/libbit.c $(INCDIR)/libbit.h
+	$(GCC) -c -o $(OBJDIR)/libbit.o $(SRCDIR)/libbit.c -I./$(INCDIR)
+
 dirs:
 	mkdir -p $(OBJDIR)
 	mkdir -p $(BINDIR)

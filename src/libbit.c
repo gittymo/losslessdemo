@@ -167,15 +167,3 @@ void _BitBuffer_RevertData(const size_t BYTES_TO_REVERT, const u_char FIRST_ORIG
     bit_buffer->buffer[bit_buffer->byte_pos] = FIRST_ORIGINAL_BYTE_VALUE;
     bit_buffer->bit_pos = FIRST_ORIGINAL_BYTE_BIT_POS;
 }
-
-int main(int argc, char * argv[])
-{
-    BitBuffer * bit_buffer = BitBuffer_Create();
-    if (!bit_buffer) exit(EXIT_FAILURE);
-
-    bit_buffer->bit_pos = 6;
-    BitBuffer_WriteBits(17, 5, bit_buffer);
-
-    free(bit_buffer);
-    exit(EXIT_SUCCESS);
-}
