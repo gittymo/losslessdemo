@@ -25,6 +25,9 @@ bool BitBuffer_WriteByte(const u_char VALUE, const u_char BITS_TO_WRITE, BitBuff
 bool BitBuffer_WriteShort(const u_int16_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer);
 bool BitBuffer_WriteInt(const u_int32_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer);
 bool BitBuffer_WriteLong(const u_int64_t VALUE, const u_char BITS_TO_WRITE, BitBuffer * bit_buffer);
+bool BitBuffer_WriteBytes(const u_char * DATA, const size_t DATA_LENGTH_BYTES, BitBuffer * bit_buffer);
+bool BitBuffer_WriteString(const char * STRING, const size_t STRING_LENGTH, BitBuffer * bit_buffer);
+
 void BitBuffer_Free(BitBuffer * bit_buffer);
 
 size_t _BitBuffer_getByteLengthForBitCount(const u_char BIT_COUNT);
