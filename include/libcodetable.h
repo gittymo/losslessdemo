@@ -10,20 +10,24 @@
 
 #define LIBCODETABLE_ENTRIES_BLOCK_SIZE 16
 
-typedef struct {
-    size_t code;
-    size_t code_length_bits;
-    char * data;
-    size_t data_length_bytes;
-} _CodeTableEntry; 
+struct __CodeTableEntry;
 
+// Public data structures
 typedef struct {
-    _CodeTableEntry ** entries;
+    struct __CodeTableEntry ** entries;
     size_t entries_count;
     size_t entries_array_size;
     bool variable_code_lengths;
     size_t fixed_code_length;
 } CodeTable;
+
+// Private data structures
+typedef struct __CodeTableEntry {
+    size_t code;
+    size_t code_length_bits;
+    char * data;
+    size_t data_length_bytes;
+} _CodeTableEntry; 
 
 // Public methods
 
